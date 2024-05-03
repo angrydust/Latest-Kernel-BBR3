@@ -24,21 +24,20 @@ jobs:
       - name: Create Directory
         run: mkdir ./kernel/
 
-      - name: Download Kernel source code
+      - name: Download Google BBRv3
         working-directory: ./kernel/
         run: |
-          git_version=$(curl -s https://www.kernel.org | grep -A 1 -m 1 "stable:" | grep -oP '\d+\.\d+' )
-          git clone https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git --branch linux-$git_version.y
+          git clone -o google-bbr -b v3  https://github.com/google/bbr.git
 
-      - name: Add Google BBRv3
-        working-directory: ./kernel/linux/
+      - name: Add Kernel source code
+        working-directory: ./kernel/bbr/
         run: |
-          git remote add google-bbr https://github.com/google/bbr.git
-          git fetch google-bbr
-          git checkout google-bbr/v3
+          git remote add linux-kernel https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+          git fetch linux-kernel
+          git checkout -b linux-$git_version.y
 
       - name: Set kernel version variables
-        working-directory: ./kernel/linux/
+        working-directory: ./kernel/bbr/
         run: |
           latest_version=$(curl -s https://www.kernel.org | grep -A 1 -m 1 "stable:" | grep -oP '\d+\.\d+\.\d+')
           version=$(echo ${latest_version} | cut -d. -f1)
@@ -49,18 +48,18 @@ jobs:
           sed -i "s/^SUBLEVEL = .*/SUBLEVEL = $sublevel/" Makefile
 
       - name: Setting .config
-        working-directory: ./kernel/linux/
+        working-directory: ./kernel/bbr/
         run: curl -sSL https://raw.githubusercontent.com/Naochen2799/Latest-Kernel-BBR3/main/.config > .config
 
       - name: Build Kernel
-        working-directory: ./kernel/linux/
+        working-directory: ./kernel/bbr/
         run: make deb-pkg -j$(nproc)
 
       - name: Upload config
         uses: actions/upload-artifact@v4
         with:
           name: config
-          path: ./kernel/linux/.config
+          path: ./kernel/bbr/.config
 
       - name: Upload deb
         uses: actions/upload-artifact@v4
