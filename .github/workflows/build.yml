@@ -110,6 +110,6 @@ jobs:
       - name: Upload to release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: ${{ steps.time.outputs.time }}-${{ matrix.arch }}
+          tag_name: ${{ steps.time.outputs.time }}
           files: ./kernel/*.deb
           body: "Latest kernel with BBRv3 for ${{ matrix.arch }} architecture"
