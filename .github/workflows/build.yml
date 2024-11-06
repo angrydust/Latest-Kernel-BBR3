@@ -17,6 +17,11 @@ jobs:
     env:
       ARCH: ${{ matrix.arch }}
     steps:
+      - name: Show system
+        run: |
+          echo -e "Total CPU cores\t: $(nproc)"
+          cat /proc/cpuinfo | grep 'model name'
+
       - name: Delete Old Releases
         uses: dev-drprasad/delete-older-releases@master
         with:
