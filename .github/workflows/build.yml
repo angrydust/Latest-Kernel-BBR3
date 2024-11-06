@@ -11,6 +11,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
+    env:
+      ARCH: ${{ matrix.arch }}
     steps:
       - name: Delete Old Releases
         uses: dev-drprasad/delete-older-releases@master
@@ -34,7 +39,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install git build-essential libncurses-dev libssl-dev libelf-dev bison bc flex rsync debhelper -y
+          sudo apt-get install -y git build-essential libncurses-dev libssl-dev libelf-dev bison bc flex rsync debhelper
+          if [ "${{ matrix.arch }}" == "arm64" ]; then
+            sudo apt-get install -y gcc-aarch64-linux-gnu
+          fi
 
       - name: Create Directory
         run: mkdir ./kernel/
@@ -65,27 +73,38 @@ jobs:
 
       - name: Setting .config
         working-directory: ./kernel/linux/
-        run: curl -sSL https://raw.githubusercontent.com/angrydust/Latest-Kernel-BBR3/main/.config > .config
+        run: |
+          curl -sSL https://raw.githubusercontent.com/angrydust/Latest-Kernel-BBR3/main/.config > .config
+          if [ "${{ matrix.arch }}" == "arm64" ]; then
+            make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- olddefconfig
+          else
+            make olddefconfig
+          fi
 
       - name: Build Kernel
         working-directory: ./kernel/linux/
-        run: make deb-pkg -j$(nproc)
+        run: |
+          if [ "${{ matrix.arch }}" == "arm64" ]; then
+            make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- deb-pkg -j$(nproc)
+          else
+            make deb-pkg -j$(nproc)
+          fi
 
       - name: Upload config
         uses: actions/upload-artifact@v4
         with:
-          name: config
+          name: config-${{ matrix.arch }}
           path: ./kernel/linux/.config
 
       - name: Upload deb
         uses: actions/upload-artifact@v4
         with:
-          name: deb
-          path: ./kernel/linux-*.deb
+          name: deb-${{ matrix.arch }}
+          path: ./kernel/*.deb
 
       - name: Upload to release
         uses: softprops/action-gh-release@master
         with:
-          tag_name: ${{ steps.time.outputs.time }}
-          files: ./kernel/linux-*.deb
-          body: latest kernel with BBRv3
+          tag_name: ${{ steps.time.outputs.time }}-${{ matrix.arch }}
+          files: ./kernel/*.deb
+          body: "Latest kernel with BBRv3 for ${{ matrix.arch }} architecture"
