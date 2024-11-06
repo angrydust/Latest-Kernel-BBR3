@@ -8,7 +8,7 @@ install_dependencies() {
 
 # 获取最新内核版本的下载链接
 get_latest_kernel_urls() {
-    curl -s "https://api.github.com/repos/Naochen2799/Latest-Kernel-BBR3/releases/latest" \
+    curl -s "https://api.github.com/repos/angrydust/Latest-Kernel-BBR3/releases/latest" \
     | grep "browser_download_url" \
     | grep -v "linux-libc-dev" \
     | cut -d '"' -f 4
