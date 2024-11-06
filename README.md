@@ -2,7 +2,7 @@
 
 ## 安装内核
 ```shell
-bash <(curl -Ls https://raw.githubusercontent.com/Naochen2799/Latest-Kernel-BBR3/main/bbr3.sh) 
+bash <(curl -Ls https://raw.githubusercontent.com/angrydust/Latest-Kernel-BBR3/main/bbr3.sh) 
 ```
 
 ### 启用 bbrv3
