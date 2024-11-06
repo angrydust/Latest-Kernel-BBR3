@@ -22,12 +22,6 @@ jobs:
           echo -e "Total CPU cores\t: $(nproc)"
           cat /proc/cpuinfo | grep 'model name'
 
-      - name: Delete Old Releases
-        uses: dev-drprasad/delete-older-releases@master
-        with:
-          keep_latest: 0
-          delete_tags: true
-          
       - name: Delete Old Workflows
         uses: Mattraks/delete-workflow-runs@main
         with:
@@ -106,6 +100,12 @@ jobs:
         with:
           name: deb-${{ matrix.arch }}
           path: ./kernel/*.deb
+
+      - name: Delete Old Releases
+        uses: dev-drprasad/delete-older-releases@master
+        with:
+          keep_latest: 0
+          delete_tags: true
 
       - name: Upload to release
         uses: softprops/action-gh-release@master
